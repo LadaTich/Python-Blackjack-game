@@ -1,4 +1,5 @@
 import random
+import json
 from tkinter import *
 from tkinter import messagebox
 
@@ -25,6 +26,28 @@ hit_button.grid(row=3, column=1, columnspan=3, padx=5, pady=5)
 
 pass_button = Button(text="PASS", padx=5, pady=5)
 pass_button.grid(row=3, column=2, columnspan=3, padx=5, pady=5)
+
+player_cards = []
+dealer_cards = []
+
+def card_generate():
+    f = open("cards_dict.json")
+    data = json.load(f)
+
+    card = random.choice(data)
+    return card
+
+
+def starting_position():
+    player_cards.append(card_generate()["value"])
+    dealer_cards.append(card_generate()["value"])
+    player_cards.append(card_generate()["value"])
+    dealer_cards.append(card_generate()["value"])
+
+starting_position()
+
+print(player_cards, dealer_cards)
+
 
 window.mainloop()
 
