@@ -2,9 +2,81 @@ import random
 import json
 from tkinter import *
 from tkinter import messagebox
+from PIL import Image
+
+def card_generate():
+    f = open("cards_dict.json")
+    data = json.load(f)
+
+    card = random.choice(data)
+    return card
+
+def starting_position():
+
+    player_cards.append(card_generate())
+    dealer_cards.append(card_generate())
+    player_cards.append(card_generate())
+    dealer_cards.append(card_generate())
+
+def show_cards():
+
+    for card in range(len(player_cards)):
+        
+        label_name = f"player_card_label{card + 1}"
+        
+        img = PhotoImage(file=f'cards/{player_cards[card]["path"]}')
+
+        labels[label_name].config(image = img)
+        labels[label_name].image = img
+
+    for card in range(len(dealer_cards)):
+        
+        label_name = f"dealer_card_label{card + 1}"
+        if label_name == "dealer_card_label1":
+            img = PhotoImage(file=f'cards/{dealer_cards[card]["path"]}')
+        else:
+            img = PhotoImage(file="bottom.png")
+
+        labels[label_name].config(image = img)
+        labels[label_name].image = img
+
+def score_increase():
+    for score in player_cards:
+        global player_score
+        player_score += int(score["value"])
+        score_label.config(text=f"Your score: {player_score}")
+
+    for score in dealer_cards:
+        global dealer_score
+        dealer_score += int(score["value"])
+
+def score_check():
+    if player_score > 21:
+        end = True
+        messagebox.showinfo(f"You lose, the dealer wins!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+    else:
+        if player_score == dealer_score:
+            end = True
+            messagebox.showinfo(f"It's a draft!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+        elif dealer_score > 21:
+            end = True
+            messagebox.showinfo(f"You won!, the dealer lose.\nYour score: {player_score}, Dealer's score: {dealer_score}")
+        else:
+            if (21-player_score) < (21-dealer_score):
+                end = True
+                messagebox.showinfo(f"You won!, the dealer lose.\nYour score: {player_score}, Dealer's score: {dealer_score}")
+            elif (21-player_score) > (21-dealer_score):
+                end = True
+                messagebox.showinfo(f"You lose, the dealer wins!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+
+
+player_cards = []
+dealer_cards = []
+
+player_score = 0
+dealer_score = 0
 
 window = Tk()
-# window.config(width=800, height=600)
 window.title("Blackjack")
 window.configure(bg="#0c7741",padx=10, pady=10)
 window.iconbitmap("icon.ico")
@@ -21,32 +93,58 @@ player_img = PhotoImage(file="player.png")
 player_label = Label(image=player_img, bg="#0c7741")
 player_label.grid(row=2, column=0, padx=10, pady=10)
 
+score_label = Label()
+score_label.grid(row=3, column=0)
+
 hit_button = Button(text="HIT", padx=5, pady=5)
 hit_button.grid(row=3, column=1, columnspan=3, padx=5, pady=5)
 
 pass_button = Button(text="PASS", padx=5, pady=5)
 pass_button.grid(row=3, column=2, columnspan=3, padx=5, pady=5)
 
-player_cards = []
-dealer_cards = []
+player_card_label1 = Label(bg="#0c7741")
+player_card_label1.grid(row=2, column=1, padx=10, pady=10)
 
-def card_generate():
-    f = open("cards_dict.json")
-    data = json.load(f)
+player_card_label2 = Label(bg="#0c7741")
+player_card_label2.grid(row=2, column=2, padx=10, pady=10)
 
-    card = random.choice(data)
-    return card
+player_card_label3 = Label(bg="#0c7741")
+player_card_label3.grid(row=2, column=3, padx=10, pady=10)
 
+player_card_label4 = Label(bg="#0c7741")
+player_card_label4.grid(row=2, column=4, padx=10, pady=10)
 
-def starting_position():
-    player_cards.append(card_generate()["value"])
-    dealer_cards.append(card_generate()["value"])
-    player_cards.append(card_generate()["value"])
-    dealer_cards.append(card_generate()["value"])
+dealer_card_label1 = Label(bg="#0c7741")
+dealer_card_label1.grid(row=1, column=1, padx=10, pady=10)
+
+dealer_card_label2 = Label(bg="#0c7741")
+dealer_card_label2.grid(row=1, column=2, padx=10, pady=10)
+
+dealer_card_label3 = Label(bg="#0c7741")
+dealer_card_label3.grid(row=1, column=3, padx=10, pady=10)
+
+dealer_card_label4 = Label(bg="#0c7741")
+dealer_card_label4.grid(row=1, column=4, padx=10, pady=10)
+
+labels = {
+    "player_card_label1" : player_card_label1,
+    "player_card_label2" : player_card_label2,
+    "player_card_label3" : player_card_label3,
+    "player_card_label4" : player_card_label4,
+    "dealer_card_label1" : dealer_card_label1,
+    "dealer_card_label2" : dealer_card_label2,
+    "dealer_card_label3" : dealer_card_label3,
+    "dealer_card_label4" : dealer_card_label4,
+}
+
 
 starting_position()
 
-print(player_cards, dealer_cards)
+score_increase()
+
+show_cards()
+
+
 
 
 window.mainloop()
