@@ -4,6 +4,8 @@ from tkinter import *
 from tkinter import messagebox
 from PIL import Image
 
+
+
 def card_generate():
     f = open("cards_dict.json")
     data = json.load(f)
@@ -17,6 +19,37 @@ def starting_position():
     dealer_cards.append(card_generate())
     player_cards.append(card_generate())
     dealer_cards.append(card_generate())
+
+    show_cards()
+    
+    blackjack_check()
+
+    player_ace_check()
+    dealer_ace_check()
+    
+    player_score_increase()
+    dealer_score_increased()
+
+
+def player_ace_check():
+    if end == False:
+
+        for card in player_cards:
+            if card["value"] == "ace":
+                ace = messagebox.askquestion("Blackjack", "Ace in your cards!\nClick on YES to count it as 11 or NO to count it as 1")
+                if ace == "yes":
+                    card["value"] = 11
+                elif ace == "no":
+                    card["value"] = 1
+    
+def dealer_ace_check():
+    if end == False:
+        for card in dealer_cards:
+            if card["value"] == "ace":
+                if dealer_score + 11 > 21:
+                    card["value"] = 1
+                else:
+                    card["value"] = 11
 
 def show_cards():
 
@@ -40,35 +73,135 @@ def show_cards():
         labels[label_name].config(image = img)
         labels[label_name].image = img
 
-def score_increase():
-    for score in player_cards:
-        global player_score
-        player_score += int(score["value"])
-        score_label.config(text=f"Your score: {player_score}")
+def player_score_increase():
+    if end == False:
+        for score in player_cards:
+            global player_score
+            player_score += int(score["value"])
+            score_label.config(text=f"Your score: {player_score}")
 
-    for score in dealer_cards:
-        global dealer_score
-        dealer_score += int(score["value"])
+def dealer_score_increased():
+    if end == False:
+        for score in dealer_cards:
+            global dealer_score
+            dealer_score += int(score["value"])
 
 def score_check():
+    global end
     if player_score > 21:
+        messagebox.showinfo("Blackjack", f"You lose, the dealer wins!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+        window.destroy()
         end = True
-        messagebox.showinfo(f"You lose, the dealer wins!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+
     else:
         if player_score == dealer_score:
+            messagebox.showinfo("Blackjack", f"It's a draft!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+            window.destroy()
             end = True
-            messagebox.showinfo(f"It's a draft!\nYour score: {player_score}, Dealer's score: {dealer_score}")
         elif dealer_score > 21:
+            messagebox.showinfo("Blackjack", f"You won! the dealer lose.\nYour score: {player_score}, Dealer's score: {dealer_score}")
+            window.destroy()
             end = True
-            messagebox.showinfo(f"You won!, the dealer lose.\nYour score: {player_score}, Dealer's score: {dealer_score}")
         else:
             if (21-player_score) < (21-dealer_score):
+                messagebox.showinfo("Blackjack", f"You won! the dealer lose.\nYour score: {player_score}, Dealer's score: {dealer_score}")
+                window.destroy()
                 end = True
-                messagebox.showinfo(f"You won!, the dealer lose.\nYour score: {player_score}, Dealer's score: {dealer_score}")
+                
             elif (21-player_score) > (21-dealer_score):
+                messagebox.showinfo("Blackjack", f"You lose, the dealer wins!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+                window.destroy()
                 end = True
-                messagebox.showinfo(f"You lose, the dealer wins!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+                
+                
 
+def hit_card():
+    global end
+    card = card_generate()
+    player_cards.append(card)
+
+    player_ace_check()
+
+    global player_score
+    player_score += int(card["value"])
+
+    score_label.config(text=f"Your score: {player_score}")
+    
+    show_cards()
+
+    if player_score > 21:
+        dealer_cards_show()
+        messagebox.showinfo("Blackjack", f"You lose, the dealer wins!\nYour score: {player_score}, Dealer's score: {dealer_score}")
+        window.destroy()
+        end = True
+
+def dealer_hit_card():
+
+    
+    for card in range(len(dealer_cards)):
+        label_name = f"dealer_card_label{card + 1}"
+
+        img = PhotoImage(file=f'cards/{dealer_cards[card]["path"]}')
+
+        labels[label_name].config(image = img)
+        labels[label_name].image = img
+
+    global dealer_score
+    while dealer_score < 17:
+        card = card_generate()
+        dealer_cards.append(card)
+        dealer_ace_check()
+        dealer_score += int(card["value"])
+
+        dealer_cards_show()
+
+    else:
+        score_check()
+    
+
+def blackjack_check():
+    global end
+    d_blackjack = False
+    p_blackjack = False
+
+    if dealer_cards[0]["value"] == 10 and dealer_cards[1]["value"] == "ace":
+        d_blackjack = True
+    elif dealer_cards[0]["value"] == "ace" and dealer_cards[1]["value"] == 10:
+        d_blackjack = True
+
+    if player_cards[0]["value"] == 10 and player_cards[1]["value"] == "ace":
+        p_blackjack = True
+    elif player_cards[0]["value"] == "ace" and player_cards[1]["value"] == 10:
+        p_blackjack = True
+            
+    if d_blackjack == True and p_blackjack == True:
+        dealer_cards_show()
+        messagebox.showinfo("Blackjack", f"It's a blackjack draft!")
+        window.destroy()
+        end = True
+    elif d_blackjack == True and p_blackjack == False:
+        dealer_cards_show()
+        messagebox.showinfo("Blackjack", f"The dealer wins with blackjack!")
+        window.destroy()
+        end = True
+    elif p_blackjack == True and d_blackjack == False:
+        dealer_cards_show()
+        messagebox.showinfo("Blackjack", f"You won with blackjack!")
+        window.destroy()
+        end = True
+
+
+def dealer_cards_show():
+    for card in range(len(dealer_cards)):
+        
+            label_name = f"dealer_card_label{card + 1}"
+
+            img = PhotoImage(file=f'cards/{dealer_cards[card]["path"]}')
+
+            labels[label_name].config(image = img)
+            labels[label_name].image = img
+
+end = False
 
 player_cards = []
 dealer_cards = []
@@ -93,13 +226,13 @@ player_img = PhotoImage(file="player.png")
 player_label = Label(image=player_img, bg="#0c7741")
 player_label.grid(row=2, column=0, padx=10, pady=10)
 
-score_label = Label()
+score_label = Label(text=f"Your score: {player_score}")
 score_label.grid(row=3, column=0)
 
-hit_button = Button(text="HIT", padx=5, pady=5)
+hit_button = Button(text="HIT", padx=5, pady=5, command=hit_card)
 hit_button.grid(row=3, column=1, columnspan=3, padx=5, pady=5)
 
-pass_button = Button(text="PASS", padx=5, pady=5)
+pass_button = Button(text="PASS", padx=5, pady=5, command=dealer_hit_card)
 pass_button.grid(row=3, column=2, columnspan=3, padx=5, pady=5)
 
 player_card_label1 = Label(bg="#0c7741")
@@ -114,6 +247,12 @@ player_card_label3.grid(row=2, column=3, padx=10, pady=10)
 player_card_label4 = Label(bg="#0c7741")
 player_card_label4.grid(row=2, column=4, padx=10, pady=10)
 
+player_card_label5 = Label(bg="#0c7741")
+player_card_label5.grid(row=2, column=5, padx=10, pady=10)
+
+player_card_label6 = Label(bg="#0c7741")
+player_card_label6.grid(row=2, column=6, padx=10, pady=10)
+
 dealer_card_label1 = Label(bg="#0c7741")
 dealer_card_label1.grid(row=1, column=1, padx=10, pady=10)
 
@@ -126,6 +265,12 @@ dealer_card_label3.grid(row=1, column=3, padx=10, pady=10)
 dealer_card_label4 = Label(bg="#0c7741")
 dealer_card_label4.grid(row=1, column=4, padx=10, pady=10)
 
+dealer_card_label5 = Label(bg="#0c7741")
+dealer_card_label5.grid(row=1, column=5, padx=10, pady=10)
+
+dealer_card_label6 = Label(bg="#0c7741")
+dealer_card_label6.grid(row=1, column=6, padx=10, pady=10)
+
 labels = {
     "player_card_label1" : player_card_label1,
     "player_card_label2" : player_card_label2,
@@ -137,109 +282,6 @@ labels = {
     "dealer_card_label4" : dealer_card_label4,
 }
 
-
 starting_position()
 
-score_increase()
-
-show_cards()
-
-
-
-
 window.mainloop()
-
-
-# def blackjack(user_cards, user_score, delaer_cards, dealer_score):  
-#     global win
-#     if user_score > 21 and 11 in user_cards:
-#         for i in range(0, user_cards):
-#             if user_cards[i] == 11:
-#                 user_cards[i] = 1
-#     if dealer_score > 21 and 11 in delaer_cards:
-#         for i in delaer_cards:
-#             if delaer_cards[i] == 11:
-#                 delaer_cards[i] = 1
-
-#     if 11 in user_cards and 10 in user_cards and 11 not in delaer_cards and 10 not in delaer_cards:
-#         print("You win with Blackjack!")
-#         win = True
-#     if 11 in delaer_cards and 10 in delaer_cards:
-#         print("The dealer wins with Blackjack!")
-#         print(f"Dealer cards: {delaer_cards}, dealer score: {dealer_score}")
-#         win = False
-
-
-# if start == "start":
-#     user_cards = [random.choice(cards), random.choice(cards)]
-#     delaer_cards = [random.choice(cards), random.choice(cards)]
-
-#     user_score = sum(user_cards)
-#     dealer_score = sum(delaer_cards)
-  
-#     print(f"Your cards: {user_cards}, your score: {user_score}") 
-#     print(f"Dealer's first card: {delaer_cards[0]}")
-    
-#     blackjack(user_cards, user_score, delaer_cards, dealer_score)
-
-    
-#     while win != True and win != False:
-#         get_or_pass = input("Type 'y' to get antoher card, type 'n' to pass:  ")
-
-#         if get_or_pass == "y":
-#             user_cards.append(random.choice(cards))
-#             user_score = sum(user_cards)
-#             print(f"Your cards: {user_cards}, your score: {user_score}") 
-#             print(f"Dealer's first card: {delaer_cards[0]}")
-
-#             blackjack(user_cards, user_score, delaer_cards, dealer_score)
-#             if user_score > 21:
-#                 win = False
-#                 print("The Dealer wins!")
-#                 print(f"Dealer cards: {delaer_cards}, dealer score: {dealer_score}")
-
-#         else:
-#             while dealer_score < 16:
-#                 delaer_cards.append(random.choice(cards))
-#                 dealer_score = sum(delaer_cards)
-#             print(f"Your cards: {user_cards}, your score: {user_score}") 
-#             user_score = sum(user_cards)
-#             if user_score > 21:
-#                 win = False
-#                 print("The Dealer wins!")
-#                 print(f"Dealer cards: {delaer_cards}, dealer score: {dealer_score}")
-#             else:
-#                 blackjack(user_cards, user_score, delaer_cards, dealer_score)
-#                 if (21-user_score) < (21-dealer_score) or dealer_score > 21:
-#                     win = True
-#                     print("You win!")
-#                     print(f"Dealer cards: {delaer_cards}, dealer score: {dealer_score}")
-#                 elif user_score == dealer_score:
-#                     win = False
-#                     print("Draft!")
-#                 else:
-#                     win = False
-#                     print("The dealer wins!")
-#                     print(f"Dealer cards: {delaer_cards}, dealer score: {dealer_score}")
-
-            
-            
-            
-           
-
-            
-            
-
-
-
-    
-
-    
-
-
-
-
-
-
-
-
