@@ -276,10 +276,14 @@ labels = {
     "player_card_label2" : player_card_label2,
     "player_card_label3" : player_card_label3,
     "player_card_label4" : player_card_label4,
+    "player_card_label5" : player_card_label5,
+    "player_card_label6" : player_card_label6,
     "dealer_card_label1" : dealer_card_label1,
     "dealer_card_label2" : dealer_card_label2,
     "dealer_card_label3" : dealer_card_label3,
     "dealer_card_label4" : dealer_card_label4,
+    "dealer_card_label5" : dealer_card_label5,
+    "dealer_card_label6" : dealer_card_label6
 }
 
 starting_position()
